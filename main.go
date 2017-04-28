@@ -502,6 +502,11 @@ func init() {
 
 func main() {
 
+	systemHostname, err := os.Hostname()
+	if err != nil {
+		log.Fatalf("While trying to get Hostname error happened: %v", err)
+	}
+
 	// commandline arguments
 	var (
 		glusterPath    = flag.String("gluster_executable_path", GlusterCmd, "Path to gluster executable.")
@@ -509,6 +514,7 @@ func main() {
 		listenAddress  = flag.String("listen-address", ":9189", "The address to listen on for HTTP requests.")
 		showVersion    = flag.Bool("version", false, "Prints version information")
 		glusterVolumes = flag.String("volumes", allVolumes, fmt.Sprintf("Comma separated volume names: vol1,vol2,vol3. Default is '%v' to scrape all metrics", allVolumes))
+		hostname       = flag.String("hostname", systemHostname, "hostname as used to address bricks")
 		profile        = flag.Bool("profile", false, "When profiling reports in gluster are enabled, set ' -profile true' to get more metrics")
 		quota          = flag.Bool("quota", false, "When quota in gluster are enabled, set ' -quota true' to get more metrics")
 	)
@@ -518,11 +524,7 @@ func main() {
 		versionInfo()
 	}
 
-	hostname, err := os.Hostname()
-	if err != nil {
-		log.Fatalf("While trying to get Hostname error happened: %v", err)
-	}
-	exporter, err := NewExporter(hostname, *glusterPath, *glusterVolumes, *profile, *quota)
+	exporter, err := NewExporter(*hostname, *glusterPath, *glusterVolumes, *profile, *quota)
 	if err != nil {
 		log.Errorf("Creating new Exporter went wrong, ... \n%v", err)
 	}
